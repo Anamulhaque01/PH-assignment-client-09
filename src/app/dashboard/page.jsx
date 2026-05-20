@@ -1,27 +1,41 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const fetchAppointments = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/appointments");
-      const data = await response.json();
-      setAppointments(data);
-    } catch (error) {
-      console.error("Error loading appointments:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+
+    if (!storedUser || !storedToken) {
+      router.push("/login");
+      return;
+    }
+
+    const parsedUser = JSON.parse(storedUser);
+    setUser(parsedUser);
+
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/appointments?email=${parsedUser.email}`);
+        const data = await response.json();
+        setAppointments(data);
+      } catch (error) {
+        console.error("Error loading appointments:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAppointments();
-  }, []);
+  }, [router]);
 
   const handleCancel = async (id) => {
     const confirmCancel = window.confirm("Are you sure you want to cancel this appointment?");
@@ -33,18 +47,24 @@ export default function DashboardPage() {
       });
       const result = await response.json();
       if (result.success) {
-        fetchAppointments();
+        setAppointments((prev) => prev.filter((app) => app._id !== id));
       }
     } catch (error) {
       console.error("Cancellation failed:", error);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
   const filteredAppointments = appointments.filter((app) =>
     app.doctorName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="py-24 text-center text-brand-muted text-sm tracking-wide">
         Synchronizing dashboard streams...
@@ -54,9 +74,17 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
-      <div className="mb-10">
-        <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-2">Overview</p>
-        <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl">Patient Dashboard</h1>
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-2">Overview</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight sm:text-4xl">Patient Dashboard</h1>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="self-start sm:self-auto rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-xs font-semibold text-brand-muted hover:text-white hover:bg-white/10 transition-all"
+        >
+          Sign Out Session
+        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
@@ -78,24 +106,21 @@ export default function DashboardPage() {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-brand-dark border border-white/10 overflow-hidden shrink-0">
                 <img 
-                  src="https://images.unsplash.com/photo-1534528741775-53994a69daeb" 
-                  alt="Profile" 
+                  src={user.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb"} 
+                  alt={user.name} 
                   className="w-full h-full object-cover" 
                 />
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-white">Anamul Haque</h4>
+                <h4 className="text-sm font-semibold text-white">{user.name}</h4>
                 <p className="text-xs text-brand-muted">Patient Profile</p>
               </div>
             </div>
             <hr className="border-white/5" />
             <div className="text-xs space-y-1 text-brand-muted">
               <p>Registered Email Address:</p>
-              <p className="text-white font-medium">anamulhaque0357@gmail.com</p>
+              <p className="text-white font-medium">{user.email}</p>
             </div>
-            <button className="w-full text-center rounded-xl border border-white/10 py-2.5 text-xs font-medium text-white hover:bg-white/5 transition-all">
-              Modify Profile Card
-            </button>
           </div>
         </div>
 

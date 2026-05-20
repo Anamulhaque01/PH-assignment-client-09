@@ -35,7 +35,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
-    } finaly {
+    } finally {
       setSubmitting(false);
     }
   };
