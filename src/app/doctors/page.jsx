@@ -28,7 +28,7 @@ export default function AllAppointmentsPage() {
     if (!localStorage.getItem("token")) {
       router.push("/login");
     } else {
-      router.push(`/appointments/${id}`);
+      router.push(`/doctors/${id}`);
     }
   };
 
