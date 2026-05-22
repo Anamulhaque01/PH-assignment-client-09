@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,7 +10,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Load the native Google Identity Services SDK script dynamically
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  // Standard login handler
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -40,20 +55,79 @@ export default function LoginPage() {
     }
   };
 
+  // 🌟 GOOGLE OAUTH CHALLENGE HANDLING
+  const handleGoogleLogin = () => {
+    if (!window.google) {
+      setError("Google authentication API failed to load. Please refresh.");
+      return;
+    }
+
+    setGoogleLoading(true);
+    setError("");
+
+    try {
+      const client = window.google.accounts.oauth2.initCodeClient({
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        scope: "email profile openid",
+        ux_mode: "popup",
+        callback: async (response) => {
+          if (response.code) {
+            try {
+              // Transmit validation authorization token directly to your express engine
+              const backendRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: response.code }),
+              });
+
+              const backendData = await backendRes.json();
+
+              if (!backendRes.ok) {
+                throw new Error(backendData.message || "Google authorization handshake failed.");
+              }
+
+              localStorage.setItem("token", backendData.token);
+              localStorage.setItem("user", JSON.stringify(backendData.user));
+              
+              router.push("/dashboard");
+            } catch (err) {
+              setError(err.message);
+            } finally {
+              setGoogleLoading(false);
+            }
+          }
+        },
+        error_callback: (err) => {
+          setError("Google login popup closed or encountered an execution failure.");
+          setGoogleLoading(false);
+        }
+      });
+
+      client.requestCode();
+    } catch (err) {
+      setError("Failed initializing Google Client authorization workflow.");
+      setGoogleLoading(false);
+    }
+  };
+
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md rounded-3xl border border-white/5 bg-brand-surface p-8 shadow-xl">
+    <div className="min-h-[85vh] flex items-center justify-center px-6 py-12 bg-brand-dark">
+      <div className="w-full max-w-md rounded-3xl border border-white/5 bg-brand-surface p-8 shadow-2xl">
+        
+        {/* Component Header Block */}
         <div className="mb-8">
-          <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-2">Access</p>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Login</h1>
+          <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-1">Access</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Login</h1>
         </div>
 
+        {/* Dynamic Exception Notice */}
         {error && (
-          <div className="mb-4 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-xs text-red-400">
+          <div className="mb-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-xs text-red-400">
             {error}
           </div>
         )}
 
+        {/* Manual Credentials Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-xs font-medium text-brand-muted">Email Address</label>
@@ -62,7 +136,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-teal transition-colors"
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
               placeholder="name@example.com"
             />
           </div>
@@ -74,22 +148,47 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-brand-teal transition-colors"
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
               placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
-            disabled={submitting}
-            className="w-full rounded-xl bg-brand-teal py-3.5 text-sm font-semibold text-brand-dark shadow-lg shadow-brand-teal/10 transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-50"
+            disabled={submitting || googleLoading}
+            className="w-full rounded-xl bg-white hover:cursor-pointer py-3.5 text-sm font-semibold text-black shadow-lg shadow-brand-teal/5 transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-50 mt-2"
           >
-            {submitting ? "Verifying..." : "Sign In"}
+            {submitting ? "Verifying Credentials..." : "Sign In"}
           </button>
         </form>
 
+        {/* Separator Strip */}
+        <div className="relative flex py-6 items-center">
+          <div className="flex-grow border-t border-white/5"></div>
+          <span className="flex-shrink mx-4 text-[10px] uppercase font-bold tracking-widest text-brand-muted">or continue with</span>
+          <div className="flex-grow border-t border-white/5"></div>
+        </div>
+
+        {/* 🌟 PREMIUM BRANDED GOOGLE BUTTON INTEGRATION */}
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={submitting || googleLoading}
+          className="w-full flex items-center justify-center gap-3 rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 active:scale-[0.99] disabled:opacity-50 hover:cursor-pointer"
+        >
+          {googleLoading ? (
+            <span className="text-xs text-brand-muted">Connecting Account Securely...</span>
+          ) : (
+            <>
+              
+              <span>Continue with Google</span>
+            </>
+          )}
+        </button>
+
         <hr className="my-6 border-white/5" />
 
+        {/* Redirect Context Footer */}
         <p className="text-center text-xs text-brand-muted">
           Don’t have an account?{" "}
           <Link href="/register" className="text-brand-teal hover:underline font-medium">
