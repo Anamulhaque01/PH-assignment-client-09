@@ -18,10 +18,17 @@ export default function Footer() {
         {/* Main Content Grid Split into 4 Columns */}
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-4">
           
-          {/* Column 1: Platform Identity */}
+          {/* Column 1: Platform Identity (Logo + Name matched perfectly) */}
           <div className="space-y-4">
-            <Link href="/" className="text-lg font-bold tracking-tight text-white">
-              Doc<span className="text-brand-teal">Appoint</span>
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-teal/10 border border-brand-teal/20 text-brand-teal">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <span className="text-lg font-bold tracking-tight text-white">
+                Doc<span className="text-brand-teal">Appoint</span>
+              </span>
             </Link>
             <p className="text-sm leading-relaxed text-brand-muted max-w-xs">
               Seamlessly connect with top-rated medical experts and take full control of your healthcare journey.
@@ -54,7 +61,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 🌟 Column 4: Social Channels Section */}
+          {/* Column 4: Social Channels Section */}
           <div className="space-y-4">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-white">Social</h4>
             <ul className="space-y-2.5 text-sm">
