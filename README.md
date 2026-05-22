@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# DocAppoint 🩺 — Healthcare Management System
 
-## Getting Started
+A responsive full-stack serverless web application connecting patients with medical specialists, featuring secure profile management, multi-method authentication, and a real-time bookings matrix.
 
-First, run the development server:
+## 🚀 Live Links
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend UI (Vercel):** [https://ph-assignment-client-09.vercel.app/](https://ph-assignment-client-09.vercel.app/)
+- **Backend API (Vercel):** [https://ph-assignment-server-09.vercel.app/](https://ph-assignment-server-09.vercel.app/)
+
+---
+
+## ✨ Key Features
+
+- **Secure Auth Gateway:** Manual registration/login alongside Google OAuth2 pop-up integration. Includes a 6-character validation schema and JWT persistence.
+- **Physician Directory:** Asynchronous name search (`$regex`) with dynamic list sorting based on the highest-rated metrics.
+- **Patient Workspace (CRUD):** Complete dashboard tracking booked sessions with interactive `PUT` / `DELETE` operations and real-time profile modal updates.
+- **SEO Metadata Hooks:** Implements server-side rendering configurations via Next.js folder layout/page abstraction layers.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** Next.js (App Router), Tailwind CSS, React Hot Toast
+- **Backend:** Node.js, Express.js, MongoDB Atlas, Google Auth Library
+
+---
+
+## 📦 Local Setup Guide
+
+### 1. Backend Config
+
+Navigate to your server directory, run `npm install`, and create a `.env` file:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_jwt_secret_key
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the server: `npm run dev`
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 2. Frontend Config
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Navigate to your client directory, run `npm install`, and create a `.env.local` file:
 
-## Learn More
+```env
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+```
 
-To learn more about Next.js, take a look at the following resources:
+Run the UI: `npm run dev` (Access via `http://localhost:3000`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧪 Challenges Addressed
 
-## Deploy on Vercel
+### 🔄 Serverless Connection Drops
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To avoid `MongoTopologyClosedError` when serverless containers go dormant, the backend checks and reconnects the database driver topology active state dynamically:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```javascript
+if (!client.topology || !client.topology.isConnected()) {
+  await client.connect();
+}
+```
+
+### 🔀 Strict CORS Policy
+
+Restricts data endpoint communication exclusively to authorized domains via a strict origin whitelisting array:
+
+```javascript
+const allowedOrigins = [
+  "http://localhost:3000",
+  "[https://ph-assignment-client-09.vercel.app](https://ph-assignment-client-09.vercel.app)",
+];
+```
+
+### 🌐 Hybrid Metadata Optimization
+
+Bypasses client-side rendering restrictions on `"use client"` interface files by nesting dedicated server layout engines within route directories to feed SEO crawls.
