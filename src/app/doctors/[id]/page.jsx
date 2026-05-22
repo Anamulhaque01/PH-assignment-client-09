@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast"; // 🌟 Import Toast Client Engine
 
 export default function DoctorDetailsPage({ params }) {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function DoctorDetailsPage({ params }) {
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // Updated fields to match your required schema keys
+  // Required schema keys
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [patientName, setPatientName] = useState("");
@@ -32,7 +33,6 @@ export default function DoctorDetailsPage({ params }) {
       const parsedUser = JSON.parse(storedUser);
       setPatientName(parsedUser.name || parsedUser.patientName || "");
       setUserEmail(parsedUser.email || parsedUser.userEmail || "");
-      // Pre-fill phone or gender if they happen to exist in local storage profile
       if (parsedUser.phone) setPhone(parsedUser.phone);
       if (parsedUser.gender) setGender(parsedUser.gender);
     }
@@ -45,6 +45,7 @@ export default function DoctorDetailsPage({ params }) {
         setDoctor(data);
       } catch (error) {
         console.error("Error fetching doctor details:", error);
+        toast.error("Failed to load doctor clinical profiles.");
       } finally {
         setLoading(false);
       }
@@ -52,16 +53,18 @@ export default function DoctorDetailsPage({ params }) {
     if (doctorId) fetchDoctorDetails();
   }, [doctorId]);
 
+  // 🌟 APPOINTMENT BOOKING SUBMISSION HANDLER WITH TOAST
   const handleBooking = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
     if (!localStorage.getItem("token")) {
+      toast.error("Please log in to schedule an appointment session.");
       router.push("/login");
       return;
     }
 
-    // Comprehensive validation checks for all required schema variants
+    // Comprehensive validation checks
     if (!appointmentDate || !appointmentTime || !patientName || !userEmail || !gender || !phone) {
       setErrorMessage("Please complete all profile information and select your schedule slot.");
       return;
@@ -87,12 +90,15 @@ export default function DoctorDetailsPage({ params }) {
 
       const result = await response.json();
       if (response.ok && result.success) {
+        // 🎉 Target Assignment Criteria Match Token
+        toast.success("Appointment booked successfully!");
         router.push("/dashboard");
       } else {
         throw new Error(result.message || "Booking request failed");
       }
     } catch (error) {
       setErrorMessage(error.message);
+      toast.error(error.message || "Could not complete scheduling handshake.");
     } finally {
       setBookingSubmit(false);
     }

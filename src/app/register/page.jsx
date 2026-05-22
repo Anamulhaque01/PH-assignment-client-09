@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast"; // 🌟 Import Toast Client Engine
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -37,15 +38,21 @@ export default function RegisterPage() {
     const hasLower = /[a-z]/.test(password);
     
     if (!hasUpper) {
-      setError("Password must contain at least one uppercase letter.");
+      const msg = "Password must contain at least one uppercase letter.";
+      setError(msg);
+      toast.error(msg); // 🌟 Inline failure notification
       return;
     }
     if (!hasLower) {
-      setError("Password must contain at least one lowercase letter.");
+      const msg = "Password must contain at least one lowercase letter.";
+      setError(msg);
+      toast.error(msg); // 🌟 Inline failure notification
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
+      const msg = "Password must be at least 6 characters long.";
+      setError(msg);
+      toast.error(msg); // 🌟 Inline failure notification
       return;
     }
 
@@ -60,18 +67,21 @@ export default function RegisterPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Registration failed");
 
+      toast.success("Account created successfully! Please login.");
       router.push("/login");
     } catch (err) {
       setError(err.message);
+      toast.error(err.message || "Registration sequence failure."); // 🌟 Server failure notification
     } finally {
       setSubmitting(false);
     }
   };
 
-  // 🌟 GOOGLE OAUTH CHALLENGE HANDLING (Saves to DB / Redirects directly to Dashboard)
+  // 🌟 GOOGLE OAUTH CHALLENGE HANDLING
   const handleGoogleLogin = () => {
     if (!window.google) {
       setError("Google authentication API failed to load. Please refresh.");
+      toast.error("Google authentication API unavailable.");
       return;
     }
 
@@ -86,7 +96,6 @@ export default function RegisterPage() {
         callback: async (response) => {
           if (response.code) {
             try {
-              // Transmit validation authorization token directly to your express backend route
               const backendRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -102,9 +111,11 @@ export default function RegisterPage() {
               localStorage.setItem("token", backendData.token);
               localStorage.setItem("user", JSON.stringify(backendData.user));
               
+              toast.success("Signed up successfully via Google!");
               router.push("/dashboard");
             } catch (err) {
               setError(err.message);
+              toast.error(err.message || "Google registration handshake failed.");
             } finally {
               setGoogleLoading(false);
             }
@@ -112,6 +123,7 @@ export default function RegisterPage() {
         },
         error_callback: (err) => {
           setError("Google registration popup closed or encountered an execution failure.");
+          toast.error("Google popup closed unexpectedly.");
           setGoogleLoading(false);
         }
       });
@@ -119,6 +131,7 @@ export default function RegisterPage() {
       client.requestCode();
     } catch (err) {
       setError("Failed initializing Google Client authorization workflow.");
+      toast.error("Could not run OAuth initialization.");
       setGoogleLoading(false);
     }
   };

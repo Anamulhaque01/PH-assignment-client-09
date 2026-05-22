@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast"; // 🌟 Import Toast Client Engine
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,6 +51,7 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err) {
       setError(err.message);
+      toast.error(err.message || "Login failed. Please verify credentials."); // 🌟 Informative error notification
     } finally {
       setSubmitting(false);
     }
@@ -59,6 +61,7 @@ export default function LoginPage() {
   const handleGoogleLogin = () => {
     if (!window.google) {
       setError("Google authentication API failed to load. Please refresh.");
+      toast.error("Google authentication API unavailable.");
       return;
     }
 
@@ -92,6 +95,7 @@ export default function LoginPage() {
               router.push("/dashboard");
             } catch (err) {
               setError(err.message);
+              toast.error(err.message || "Google registration sync failed.");
             } finally {
               setGoogleLoading(false);
             }
@@ -99,6 +103,7 @@ export default function LoginPage() {
         },
         error_callback: (err) => {
           setError("Google login popup closed or encountered an execution failure.");
+          toast.error("Google login handshake disrupted.");
           setGoogleLoading(false);
         }
       });
@@ -106,6 +111,7 @@ export default function LoginPage() {
       client.requestCode();
     } catch (err) {
       setError("Failed initializing Google Client authorization workflow.");
+      toast.error("Could not run OAuth initialization.");
       setGoogleLoading(false);
     }
   };
@@ -180,6 +186,7 @@ export default function LoginPage() {
             <span className="text-xs text-brand-muted">Connecting Account Securely...</span>
           ) : (
             <>
+              {/* Native Vector Google Asset Icon */}
               
               <span>Continue with Google</span>
             </>

@@ -20,7 +20,7 @@ export default function ServicesSection() {
   ];
 
   return (
-    <section className="border-y border-white/5 bg-brand-surface/40 py-20 px-6">
+    <section className="max-w-7xl mx-auto border-y border-white/5 bg-brand-surface/40 py-20 px-6">
       <div className="mx-auto max-w-7xl">
         <div className="text-center max-w-xl mx-auto mb-16">
           <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-2">Capabilities</p>
