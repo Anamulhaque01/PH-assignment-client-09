@@ -52,7 +52,7 @@
             <div className="lg:col-span-7 space-y-8 text-left">
             
             <div className="inline-flex items-center gap-2 bg-brand-surface border border-white/5 rounded-full px-4 py-1.5 text-xs text-brand-teal font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-teal animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-700 animate-pulse" />
                 Next-Gen Healthcare Scheduling
             </div>
 

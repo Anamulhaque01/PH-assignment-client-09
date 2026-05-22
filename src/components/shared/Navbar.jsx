@@ -86,13 +86,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-sm font-medium text-brand-muted transition-colors duration-200 hover:text-white px-4 py-2"
+                className="text-sm font-medium text-brand-muted transition-colors duration-200 hover:text-white px-3 py-2"
               >
-                Sign In
+                Login
               </Link>
               <Link
                 href="/register"
-                className="rounded-xl bg-brand-teal px-5 py-2.5 text-sm font-semibold text-brand-dark transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+                className="rounded-xl bg-brand-teal px-3 py-2.5 text-sm font-semibold text-brand-dark transition-all duration-200 hover:opacity-90 active:scale-[0.98] bg"
               >
                 Register
               </Link>
@@ -169,7 +169,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className="block text-center rounded-xl border border-white/10 py-3 text-sm font-medium text-white hover:bg-white/5 transition-all"
               >
-                Sign In
+                Login
               </Link>
               <Link
                 href="/register"
