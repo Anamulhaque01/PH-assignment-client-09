@@ -12,7 +12,7 @@ export default function AllAppointmentsPage() {
   useEffect(() => {
     async function getDoctors() {
       try {
-        const res = await fetch(`http://localhost:5000/api/doctors?search=${search}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors?search=${search}`);
         const data = await res.json();
         setDoctors(data);
       } catch (err) {

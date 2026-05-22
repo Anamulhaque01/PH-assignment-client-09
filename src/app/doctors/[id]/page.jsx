@@ -32,7 +32,7 @@ export default function DoctorDetailsPage({ params }) {
 
     async function fetchDoctorDetails() {
       try {
-        const response = await fetch(`http://localhost:5000/api/doctors/${doctorId}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/${doctorId}`);
         if (!response.ok) throw new Error();
         const data = await response.json();
         setDoctor(data);
@@ -61,7 +61,7 @@ export default function DoctorDetailsPage({ params }) {
 
     setBookingSubmit(true);
     try {
-      const response = await fetch("http://localhost:5000/api/appointments", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

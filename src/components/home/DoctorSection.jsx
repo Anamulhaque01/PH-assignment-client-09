@@ -11,7 +11,7 @@
     useEffect(() => {
         async function fetchDoctors() {
         try {
-            const response = await fetch("http://localhost:5000/api/doctors");
+            const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors`);
             const data = await response.json();
             // Limit to top 3 for the homepage showcase
             setDoctors(data.slice(0, 3));

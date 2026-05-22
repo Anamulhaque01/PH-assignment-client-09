@@ -38,7 +38,7 @@ export default function DashboardPage() {
     setProfileName(parsedUser?.name || "");
     setProfilePhoto(parsedUser?.photoUrl || "");
 
-    fetch(`http://localhost:5000/api/appointments?email=${parsedUser.email}`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments?email=${parsedUser.email}`)
       .then((res) => res.json())
       .then((data) => {
         // Fallback to empty array if data is corrupted or null
@@ -53,7 +53,7 @@ export default function DashboardPage() {
 
   const handleDelete = async (id) => {
     if (!id || !window.confirm("Delete this session entry permanently?")) return;
-    const res = await fetch(`http://localhost:5000/api/appointments/${id}`, { method: "DELETE" });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments/${id}`, { method: "DELETE" });
     if (res.ok) {
       setAppointments(appointments.filter((app) => app && app._id !== id));
     }
@@ -73,7 +73,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!editAppointment?._id) return;
 
-    const res = await fetch(`http://localhost:5000/api/appointments/${editAppointment._id}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments/${editAppointment._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ patientName, gender, phone, appointmentDate, appointmentTime }),
@@ -93,7 +93,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!user?.email) return;
 
-    const res = await fetch(`http://localhost:5000/api/users/${user.email}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/${user.email}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: profileName, photoUrl: profilePhoto }),
@@ -119,7 +119,7 @@ export default function DashboardPage() {
           <img src={user.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb"} alt={user.name} className="w-20 h-20 rounded-full object-cover mb-4 border border-white/10" />
           <h3 className="text-lg font-bold">{user.name}</h3>
           <p className="text-xs text-brand-muted mb-6">{user.email}</p>
-          <button onClick={() => setShowProfileModal(true)} className="w-full bg-brand-teal text-brand-dark font-semibold py-2.5 rounded-xl text-xs">
+          <button onClick={() => setShowProfileModal(true)} className="w-full bg-white text-black hover:cursor-pointer font-semibold py-2.5 rounded-xl text-xs">
             Update Profile
           </button>
         </div>
@@ -143,8 +143,8 @@ export default function DashboardPage() {
                       <p className="text-[11px] text-brand-muted">Schedule: {app.appointmentDate} at {app.appointmentTime}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={() => openEditModal(app)} className="bg-white/5 border border-white/10 px-3 py-1.5 text-xs rounded-lg text-brand-muted hover:text-white">Update</button>
-                      <button onClick={() => handleDelete(app._id)} className="bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-xs rounded-lg text-red-400 hover:bg-red-500 hover:text-white">Delete</button>
+                      <button onClick={() => openEditModal(app)} className="bg-white/5 border border-white/10 px-3 py-1.5 text-xs rounded-lg text-brand-muted hover:text-white hover:cursor-pointer">Update</button>
+                      <button onClick={() => handleDelete(app._id)} className="bg-red-500/10 border border-red-500/20 px-3 py-1.5 text-xs rounded-lg text-red-400 hover:bg-red-500 hover:text-white hover:cursor-pointer">Delete</button>
                     </div>
                   </div>
                 );
@@ -182,8 +182,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex gap-2 justify-end pt-2">
-              <button type="button" onClick={() => setEditAppointment(null)} className="px-4 py-2 text-xs text-brand-muted bg-white/5 rounded-xl">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-xs text-brand-dark bg-brand-teal font-bold rounded-xl">Save Changes</button>
+              <button type="button" onClick={() => setEditAppointment(null)} className="px-4 py-2 text-xs text-brand-muted bg-white/5 rounded-xl hover:cursor-pointer">Cancel</button>
+              <button type="submit" className="px-4 py-2 text-xs text-black bg-white font-bold rounded-xl hover:cursor-pointer">Save Changes</button>
             </div>
           </form>
         </div>
@@ -203,8 +203,8 @@ export default function DashboardPage() {
               <input type="url" value={profilePhoto} onChange={(e) => setProfilePhoto(e.target.value)} className="w-full bg-brand-dark border border-white/5 rounded-xl px-3 py-2 text-sm text-white" />
             </div>
             <div className="flex gap-2 justify-end pt-2">
-              <button type="button" onClick={() => setShowProfileModal(false)} className="px-4 py-2 text-xs text-brand-muted bg-white/5 rounded-xl">Cancel</button>
-              <button type="submit" className="px-4 py-2 text-xs text-brand-dark bg-brand-teal font-bold rounded-xl">Update</button>
+              <button type="button" onClick={() => setShowProfileModal(false)} className="px-4 py-2 text-xs text-brand-muted bg-white/5 rounded-xl hover:cursor-pointer">Cancel</button>
+              <button type="submit" className="px-4 py-2 text-xs text-black bg-white hover:cursor-pointer font-bold rounded-xl">Update</button>
             </div>
           </form>
         </div>

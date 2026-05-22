@@ -8,7 +8,7 @@
 
     const fetchAppointments = async () => {
         try {
-        const response = await fetch("http://localhost:5000/api/appointments");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments`);
         const data = await response.json();
         setAppointments(data);
         } catch (error) {
@@ -27,7 +27,7 @@
         if (!confirmCancel) return;
 
         try {
-        const response = await fetch(`http://localhost:5000/api/appointments/${id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments/${id}`, {
             method: "DELETE",
         });
         const result = await response.json();
