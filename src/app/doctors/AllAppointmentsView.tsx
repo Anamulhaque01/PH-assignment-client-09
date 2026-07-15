@@ -3,22 +3,34 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// 1. Define the structural shape of a Doctor data object
+interface Doctor {
+  _id: string;
+  name: string;
+  specialty: string;
+  fee: number | string;
+  description?: string;
+  image?: string;
+  rating?: number;
+}
+
 export default function AllAppointmentsView() {
   const router = useRouter();
-  const [doctors, setDoctors] = useState([]);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  
+  // Explicitly tell the state it accepts an array of Doctors
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
+  const [search, setSearch] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Fallback placeholder image URL if doctor.image fails to load or is null
   const defaultDoctorImage = "https://plus.unsplash.com/premium_photo-1677252438411-9a930d7a5168?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
   useEffect(() => {
     async function getDoctors() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors?search=${search}`);
-        const data = await res.json();
+        const data: Doctor[] = await res.json();
         
-        // 🌟 ARRANGE: Sort doctors in descending order based on their rating metric (Highest -> Lowest)
+        // Sort doctors safely knowing rating might be missing or optional
         const sortedData = data.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         
         setDoctors(sortedData);
@@ -31,7 +43,8 @@ export default function AllAppointmentsView() {
     getDoctors();
   }, [search]);
 
-  const handleDetailsRedirect = (id) => {
+  // Type parameters explicitly as a string identifier
+  const handleDetailsRedirect = (id: string) => {
     if (!localStorage.getItem("token")) {
       router.push("/login");
     } else {
@@ -47,7 +60,6 @@ export default function AllAppointmentsView() {
           <h1 className="text-3xl font-bold text-white tracking-tight">All Available Openings</h1>
         </div>
         
-        {/* Search Input Field */}
         <input 
           type="text" 
           placeholder="Search by Doctor Name..." 
@@ -69,14 +81,13 @@ export default function AllAppointmentsView() {
                     src={doc.image || defaultDoctorImage} 
                     alt={doc.name} 
                     className="w-full h-full object-cover"
-                    // 🌟 DEFAULT PICTURE FALLBACK: Triggers dynamically if image fails to download or link breaks
                     onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src = defaultDoctorImage;
+                      const target = e.currentTarget;
+                      target.onerror = null; 
+                      target.src = defaultDoctorImage;
                     }}
                   />
                   
-                  {/* 🌟 RATING BADGE: Visual indicator anchored onto the image element context */}
                   <div className="absolute top-3 right-3 bg-brand-surface/90 border border-white/10 backdrop-blur-md px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-md">
                     <span className="text-amber-400 text-xs">★</span>
                     <span className="text-white font-bold text-[11px] tracking-wide">

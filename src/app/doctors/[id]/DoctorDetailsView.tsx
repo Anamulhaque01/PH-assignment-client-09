@@ -4,26 +4,42 @@ import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-export default function DoctorDetailsView({ params }) {
+// 1. Structure the schema profile data for a Doctor
+interface DoctorProfile {
+  _id: string;
+  name: string;
+  specialty: string;
+  description?: string;
+  image?: string;
+  experience?: number | string;
+  fee: number | string;
+}
+
+// 2. Define component property types matching Next.js async parameters
+interface DoctorDetailsViewProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function DoctorDetailsView({ params }: DoctorDetailsViewProps) {
   const router = useRouter();
   const unwrappedParams = use(params);
   const doctorId = unwrappedParams.id;
 
-  const [doctor, setDoctor] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Type definitions for states
+  const [doctor, setDoctor] = useState<DoctorProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   
-  // Required schema keys
-  const [appointmentDate, setAppointmentDate] = useState("");
-  const [appointmentTime, setAppointmentTime] = useState("");
-  const [patientName, setPatientName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-  const [gender, setGender] = useState("");
-  const [phone, setPhone] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState<string>("");
+  const [appointmentTime, setAppointmentTime] = useState<string>("");
+  const [patientName, setPatientName] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
   
-  const [bookingSubmit, setBookingSubmit] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [bookingSubmit, setBookingSubmit] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const availableSlots = ["09:00 AM", "10:30 AM", "11:00 AM", "03:00 PM", "06:00 PM"];
+  const availableSlots: string[] = ["09:00 AM", "10:30 AM", "11:00 AM", "03:00 PM", "06:00 PM"];
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -41,7 +57,7 @@ export default function DoctorDetailsView({ params }) {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/${doctorId}`);
         if (!response.ok) throw new Error();
-        const data = await response.json();
+        const data: DoctorProfile = await response.json();
         setDoctor(data);
       } catch (error) {
         console.error("Error fetching doctor details:", error);
@@ -53,8 +69,8 @@ export default function DoctorDetailsView({ params }) {
     if (doctorId) fetchDoctorDetails();
   }, [doctorId]);
 
-  // 🌟 APPOINTMENT BOOKING SUBMISSION HANDLER WITH TOAST
-  const handleBooking = async (e) => {
+  // Form submit element typed safely
+  const handleBooking = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage("");
 
@@ -64,8 +80,7 @@ export default function DoctorDetailsView({ params }) {
       return;
     }
 
-    // Comprehensive validation checks
-    if (!appointmentDate || !appointmentTime || !patientName || !userEmail || !gender || !phone) {
+    if (!appointmentDate || !appointmentTime || !patientName || !userEmail || !gender || !phone || !doctor) {
       setErrorMessage("Please complete all profile information and select your schedule slot.");
       return;
     }
@@ -95,7 +110,7 @@ export default function DoctorDetailsView({ params }) {
       } else {
         throw new Error(result.message || "Booking request failed");
       }
-    } catch (error) {
+    } catch (error: any) {
       setErrorMessage(error.message);
       toast.error(error.message || "Could not complete scheduling handshake.");
     } finally {
@@ -123,7 +138,6 @@ export default function DoctorDetailsView({ params }) {
     <div className="mx-auto max-w-7xl px-6 py-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         
-        {/* Left Column - Doctor Card Banner */}
         <div className="lg:col-span-5 bg-brand-surface border border-white/5 rounded-3xl p-6 sm:p-8 shadow-xl">
           <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-brand-dark border border-white/10 mb-6">
             <img
@@ -152,7 +166,6 @@ export default function DoctorDetailsView({ params }) {
           </div>
         </div>
 
-        {/* Right Column - Submission Form Section */}
         <div className="lg:col-span-7 bg-brand-surface border border-white/5 rounded-3xl p-6 sm:p-8 shadow-xl">
           <h2 className="text-xl font-bold text-white tracking-tight mb-2">Schedule Session</h2>
           <p className="text-xs text-brand-muted mb-6">Select appointment metrics and fill in credentials.</p>
@@ -164,8 +177,6 @@ export default function DoctorDetailsView({ params }) {
           )}
 
           <form onSubmit={handleBooking} className="space-y-5">
-            
-            {/* Patient Context Block */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-brand-muted">Patient Full Name</label>
@@ -191,7 +202,6 @@ export default function DoctorDetailsView({ params }) {
               </div>
             </div>
 
-            {/* Added Inputs: Phone Number and Gender Selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-brand-muted">Phone Number</label>
@@ -221,7 +231,6 @@ export default function DoctorDetailsView({ params }) {
               </div>
             </div>
 
-            {/* Date Input Elements */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-brand-muted">Select Date</label>
               <input
@@ -233,7 +242,6 @@ export default function DoctorDetailsView({ params }) {
               />
             </div>
 
-            {/* Time Slots Element */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-brand-muted">Available Time Slots</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

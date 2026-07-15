@@ -4,26 +4,45 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
+// 1. Core Interfaces for state safety
+interface UserProfile {
+  name: string;
+  email: string;
+  photoUrl?: string;
+}
+
+interface Appointment {
+  _id: string;
+  doctorName: string;
+  patientName: string;
+  gender: string;
+  phone: string;
+  appointmentDate: string;
+  appointmentTime: string;
+}
+
 export default function DashboardView() {
   const router = useRouter();
-  const [appointments, setAppointments] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  
+  // States strictly explicitly typed
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Modal Control States
-  const [editAppointment, setEditAppointment] = useState(null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [editAppointment, setEditAppointment] = useState<Appointment | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
 
   // Edit Appointment Form Fields
-  const [patientName, setPatientName] = useState("");
-  const [gender, setGender] = useState("");
-  const [phone, setPhone] = useState("");
-  const [appointmentDate, setAppointmentDate] = useState("");
-  const [appointmentTime, setAppointmentTime] = useState("");
+  const [patientName, setPatientName] = useState<string>("");
+  const [gender, setGender] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [appointmentDate, setAppointmentDate] = useState<string>("");
+  const [appointmentTime, setAppointmentTime] = useState<string>("");
 
   // Edit Profile Form Fields
-  const [profileName, setProfileName] = useState("");
-  const [profilePhoto, setProfilePhoto] = useState("");
+  const [profileName, setProfileName] = useState<string>("");
+  const [profilePhoto, setProfilePhoto] = useState<string>("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -34,7 +53,7 @@ export default function DashboardView() {
       return;
     }
 
-    const parsedUser = JSON.parse(storedUser);
+    const parsedUser: UserProfile = JSON.parse(storedUser);
     setUser(parsedUser);
     setProfileName(parsedUser?.name || "");
     setProfilePhoto(parsedUser?.photoUrl || "");
@@ -52,8 +71,8 @@ export default function DashboardView() {
       });
   }, [router]);
 
-  // 🌟 1. DELETE APPOINTMENT HANDLER
-  const handleDelete = async (id) => {
+  // Handle Deletions
+  const handleDelete = async (id: string) => {
     if (!id || !window.confirm("Are you sure you want to cancel this appointment?")) return;
     
     try {
@@ -67,12 +86,12 @@ export default function DashboardView() {
       } else {
         throw new Error("Failed to clear appointment on server.");
       }
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.message || "An unexpected error occurred.");
     }
   };
 
-  const openEditModal = (app) => {
+  const openEditModal = (app: Appointment) => {
     if (!app) return;
     setEditAppointment(app);
     setPatientName(app.patientName || "");
@@ -82,8 +101,8 @@ export default function DashboardView() {
     setAppointmentTime(app.appointmentTime || "");
   };
 
-  // 🌟 2. UPDATE APPOINTMENT HANDLER
-  const handleUpdateAppointment = async (e) => {
+  // Form Submit updates explicitly type the element parameter
+  const handleUpdateAppointment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editAppointment?._id) return;
 
@@ -105,13 +124,12 @@ export default function DashboardView() {
       } else {
         throw new Error("Failed to sync structural form records.");
       }
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.message || "Could not complete data sync modifications.");
     }
   };
 
-  // 🌟 3. UPDATE USER PROFILE HANDLER
-  const handleUpdateProfile = async (e) => {
+  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user?.email) return;
 
@@ -123,7 +141,7 @@ export default function DashboardView() {
       });
 
       if (res.ok) {
-        const updated = { ...user, name: profileName, photoUrl: profilePhoto };
+        const updated: UserProfile = { ...user, name: profileName, photoUrl: profilePhoto };
         localStorage.setItem("user", JSON.stringify(updated));
         setUser(updated);
         setShowProfileModal(false);
@@ -131,7 +149,7 @@ export default function DashboardView() {
       } else {
         throw new Error("Failed validation schema update execution.");
       }
-    } catch (err) {
+    } catch (err: any) {
       toast.error(err.message || "Unable to update account parameters.");
     }
   };
@@ -143,15 +161,15 @@ export default function DashboardView() {
       <h1 className="text-3xl font-bold mb-10">Dashboard Workspace</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Profile Card View */}
         <div className="lg:col-span-4 bg-brand-surface rounded-2xl p-6 border border-white/5 self-start">
           <img 
             src={user.photoUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb"} 
             alt={user.name} 
             className="w-20 h-20 rounded-full object-cover mb-4 border border-white/10" 
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb";
+              const target = e.currentTarget;
+              target.onerror = null;
+              target.src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb";
             }}
           />
           <h3 className="text-lg font-bold">{user.name}</h3>
@@ -161,7 +179,6 @@ export default function DashboardView() {
           </button>
         </div>
 
-        {/* Bookings Table List */}
         <div className="lg:col-span-8 bg-brand-surface rounded-2xl p-6 border border-white/5">
           <h2 className="text-xl font-bold mb-4">My Bookings</h2>
           {appointments.length === 0 ? (
@@ -190,7 +207,6 @@ export default function DashboardView() {
         </div>
       </div>
 
-      {/* Appointment Update Modal Container */}
       {editAppointment && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <form onSubmit={handleUpdateAppointment} className="bg-brand-surface p-6 rounded-2xl max-w-md w-full border border-white/10 space-y-4">
@@ -225,7 +241,6 @@ export default function DashboardView() {
         </div>
       )}
 
-      {/* Profile Update Modal Container */}
       {showProfileModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <form onSubmit={handleUpdateProfile} className="bg-brand-surface p-6 rounded-2xl max-w-md w-full border border-white/10 space-y-4">

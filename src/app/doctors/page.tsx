@@ -1,6 +1,7 @@
+import { Metadata } from "next";
 import AllAppointmentsView from "./AllAppointmentsView";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Available Doctor Appointments",
   description: "Browse through our collection of certified healthcare specialists, check consulting session fees, ratings, and book your next checkup appointment.",
   openGraph: {

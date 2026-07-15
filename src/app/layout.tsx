@@ -1,9 +1,10 @@
+import { Metadata } from "next";
 import Navbar from "@/components/shared/Navbar";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import Footer from "@/components/shared/Footer";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: {
     default: "DocAppoint | Manage Your Medical Appointments Seamlessly",
     template: "%s | DocAppoint"
@@ -21,7 +22,12 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+// Define properties interface for the layout wrapper
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <body className="bg-brand-dark text-white antialiased selection:bg-brand-teal/20 selection:text-brand-teal">
@@ -32,14 +38,12 @@ export default function RootLayout({ children }) {
               background: '#121824', // Matches your brand-surface / dark theme
               color: '#fff',
               border: '1px solid rgba(255, 255, 255, 0.05)',
-              borderRadius: '12px',
-              fontSize: '14px',
             },
           }}
         />
         <Navbar />
-        {children}
-        <Footer></Footer>
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

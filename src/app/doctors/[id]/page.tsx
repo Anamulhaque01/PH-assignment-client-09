@@ -1,14 +1,17 @@
 import DoctorDetailsView from "./DoctorDetailsView";
 
-// Next.js automatically executes this asynchronous method on the server lifecycle
-export async function generateMetadata({ params }) {
+// 1. Define a strict interface representing the expected asynchronous URL route parameters
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps) {
   const resolvedParams = await params;
   const { id } = resolvedParams;
 
   try {
-    // Queries your live backend using the environment configuration URL
     const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/doctors/${id}`, {
-      cache: "no-store", // Prevents server data caching staleness
+      cache: "no-store",
     });
 
     if (!res.ok) {
@@ -32,7 +35,6 @@ export async function generateMetadata({ params }) {
       },
     };
   } catch (error) {
-    // Fallback secure meta tags if connection drops temporarily
     return {
       title: "Doctor Directory Specialist Profile",
       description: "Read clinician credentials, medical session fees, and booking details.",
@@ -40,6 +42,6 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function Page({ params }) {
+export default function Page({ params }: PageProps) {
   return <DoctorDetailsView params={params} />;
 }

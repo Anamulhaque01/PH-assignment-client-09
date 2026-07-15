@@ -7,13 +7,13 @@ import { toast } from "react-hot-toast";
 
 export default function RegisterView() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [photoUrl, setPhotoUrl] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -27,7 +27,7 @@ export default function RegisterView() {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -46,36 +46,39 @@ export default function RegisterView() {
       toast.error(msg);
       return;
     }
-    if (password.length < 6) {
-      const msg = "Password must be at least 6 characters long.";
-      setError(msg);
-      toast.error(msg);
-      return;
-    }
 
     setSubmitting(true);
+
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, photoUrl, password }),
+        body: JSON.stringify({ name, email, password, photoUrl }),
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Registration failed");
 
-      toast.success("Account created successfully! Please login.");
-      router.push("/login");
-    } catch (err) {
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      
+      toast.success("Account created successfully!");
+      router.push("/dashboard");
+    } catch (err: any) {
       setError(err.message);
-      toast.error(err.message || "Registration sequence failure.");
-    } finally {
+      toast.error(err.message || "An error occurred during registration.");
+    } finally { // <--- Spelled with double 'l'
       setSubmitting(false);
     }
   };
 
   const handleGoogleLogin = () => {
-    if (!window.google) {
+    const globalWindow = window as any;
+
+    if (!globalWindow.google) {
       setError("Google authentication API failed to load. Please refresh.");
       toast.error("Google authentication API unavailable.");
       return;
@@ -85,11 +88,11 @@ export default function RegisterView() {
     setError("");
 
     try {
-      const client = window.google.accounts.oauth2.initCodeClient({
+      const client = globalWindow.google.accounts.oauth2.initCodeClient({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         scope: "email profile openid",
         ux_mode: "popup",
-        callback: async (response) => {
+        callback: async (response: { code?: string }) => {
           if (response.code) {
             try {
               const backendRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`, {
@@ -101,25 +104,25 @@ export default function RegisterView() {
               const backendData = await backendRes.json();
 
               if (!backendRes.ok) {
-                throw new Error(backendData.message || "Google authorization handshake failed.");
+                throw new Error(backendData.message || "Google registration handshake failed.");
               }
 
               localStorage.setItem("token", backendData.token);
               localStorage.setItem("user", JSON.stringify(backendData.user));
               
-              toast.success("Signed up successfully via Google!");
+              toast.success("Google registration successful!");
               router.push("/dashboard");
-            } catch (err) {
+            } catch (err: any) {
               setError(err.message);
-              toast.error(err.message || "Google registration handshake failed.");
+              toast.error(err.message || "Google registration sync failed.");
             } finally {
               setGoogleLoading(false);
             }
           }
         },
-        error_callback: (err) => {
-          setError("Google registration popup closed or encountered an execution failure.");
-          toast.error("Google popup closed unexpectedly.");
+        error_callback: () => {
+          setError("Google sign-up popup closed or encountered an execution failure.");
+          toast.error("Google login handshake disrupted.");
           setGoogleLoading(false);
         }
       });
@@ -135,8 +138,8 @@ export default function RegisterView() {
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-6 py-12 bg-brand-dark">
       <div className="w-full max-w-md rounded-3xl border border-white/5 bg-brand-surface p-8 shadow-2xl">
-        <div className="mb-6">
-          <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-1">Access</p>
+        <div className="mb-8">
+          <p className="text-xs font-semibold tracking-widest text-brand-teal uppercase mb-1">Join</p>
           <h1 className="text-3xl font-bold text-white tracking-tight">Register</h1>
         </div>
 
@@ -146,58 +149,57 @@ export default function RegisterView() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-xs font-medium text-brand-muted block mb-1">Full Name</label>
-            <input 
-              type="text" 
-              required 
-              value={name} 
-              onChange={(e) => setName(e.target.value)} 
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors" 
-              placeholder="John Doe" 
-            />
-          </div>
-          
-          <div>
-            <label className="text-xs font-medium text-brand-muted block mb-1">Email Address</label>
-            <input 
-              type="email" 
-              required 
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors" 
-              placeholder="john@example.com" 
-            />
-          </div>
-          
-          <div>
-            <label className="text-xs font-medium text-brand-muted block mb-1">Profile Photo URL</label>
-            <input 
-              type="url" 
-              required 
-              value={photoUrl} 
-              onChange={(e) => setPhotoUrl(e.target.value)} 
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors" 
-              placeholder="https://link.com/photo.jpg" 
-            />
-          </div>
-          
-          <div>
-            <label className="text-xs font-medium text-brand-muted block mb-1">Password</label>
-            <input 
-              type="password" 
-              required 
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors" 
-              placeholder="••••••••" 
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-brand-muted">Full Name</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
+              placeholder="John Doe"
             />
           </div>
 
-          <button 
-            type="submit" 
-            disabled={submitting || googleLoading} 
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-brand-muted">Email Address</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
+              placeholder="name@example.com"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-brand-muted">Profile Photo URL (Optional)</label>
+            <input
+              type="url"
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
+              placeholder="https://example.com/avatar.jpg"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-brand-muted">Password</label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-brand-dark border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-brand-teal transition-colors"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || googleLoading}
             className="w-full rounded-xl bg-white py-3.5 text-sm font-semibold text-black shadow-lg shadow-brand-teal/5 transition-all hover:opacity-90 active:scale-[0.99] disabled:opacity-50 mt-2 hover:cursor-pointer"
           >
             {submitting ? "Creating Account..." : "Register"}

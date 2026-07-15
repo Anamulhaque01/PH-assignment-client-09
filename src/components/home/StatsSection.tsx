@@ -1,7 +1,13 @@
 import React from "react";
 
+// 1. Defining structural item constraints for dashboard count chips
+interface FeatureStat {
+  metric: string;
+  label: string;
+}
+
 export default function StatsSection() {
-  const features = [
+  const features: FeatureStat[] = [
     { metric: "99%", label: "Patient Satisfaction Rate" },
     { metric: "15k+", label: "Completed Bookings" },
     { metric: "50+", label: "Verified Specialists" },

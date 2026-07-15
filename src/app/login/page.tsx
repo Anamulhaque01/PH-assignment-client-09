@@ -1,7 +1,7 @@
+import { Metadata } from "next";
 import LoginView from "./LoginView";
 
-// Next.js reads this metadata block seamlessly on the server side
-export const metadata = {
+export const metadata: Metadata = {
   title: "Login",
   description: "Sign in to your DocAppoint account to securely schedule patient visits and check your personal healthcare dashboard charts.",
   openGraph: {

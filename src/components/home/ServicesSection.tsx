@@ -1,7 +1,14 @@
 import React from "react";
 
+// 1. Interface typing for card pillars
+interface ServiceItem {
+  icon: string;
+  title: string;
+  desc: string;
+}
+
 export default function ServicesSection() {
-  const services = [
+  const services: ServiceItem[] = [
     {
       icon: "🩺",
       title: "General Consultation",
@@ -10,7 +17,7 @@ export default function ServicesSection() {
     {
       icon: "❤️",
       title: "Specialized Care",
-      desc: "Direct booking channels to top regional cardiologists, neurologists, pediatricians, and seasoned surgical experts."
+      desc: "Direct booking channels to top regional cardiologists, neurologists, pediatrician lines, and seasoned surgical experts."
     },
     {
       icon: "⏰",
@@ -40,7 +47,7 @@ export default function ServicesSection() {
               <h3 className="text-base font-bold text-white group-hover:text-brand-teal transition-colors">
                 {service.title}
               </h3>
-              <p className="text-xs text-brand-muted mt-2.5 leading-relaxed">
+              <p className="text-xs text-brand-muted mt-3 leading-relaxed">
                 {service.desc}
               </p>
             </div>

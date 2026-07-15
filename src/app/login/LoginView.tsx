@@ -7,11 +7,11 @@ import { toast } from "react-hot-toast";
 
 export default function LoginView() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -25,7 +25,7 @@ export default function LoginView() {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setSubmitting(true);
@@ -47,7 +47,7 @@ export default function LoginView() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
       toast.error(err.message || "Login failed. Please verify credentials.");
     } finally {
@@ -56,7 +56,9 @@ export default function LoginView() {
   };
 
   const handleGoogleLogin = () => {
-    if (!window.google) {
+    const globalWindow = window as any;
+
+    if (!globalWindow.google) {
       setError("Google authentication API failed to load. Please refresh.");
       toast.error("Google authentication API unavailable.");
       return;
@@ -66,11 +68,11 @@ export default function LoginView() {
     setError("");
 
     try {
-      const client = window.google.accounts.oauth2.initCodeClient({
+      const client = globalWindow.google.accounts.oauth2.initCodeClient({
         client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         scope: "email profile openid",
         ux_mode: "popup",
-        callback: async (response) => {
+        callback: async (response: { code?: string }) => {
           if (response.code) {
             try {
               const backendRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/google`, {
@@ -89,7 +91,7 @@ export default function LoginView() {
               localStorage.setItem("user", JSON.stringify(backendData.user));
               
               router.push("/dashboard");
-            } catch (err) {
+            } catch (err: any) {
               setError(err.message);
               toast.error(err.message || "Google registration sync failed.");
             } finally {
@@ -97,7 +99,7 @@ export default function LoginView() {
             }
           }
         },
-        error_callback: (err) => {
+        error_callback: () => {
           setError("Google login popup closed or encountered an execution failure.");
           toast.error("Google login handshake disrupted.");
           setGoogleLoading(false);

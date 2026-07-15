@@ -1,6 +1,7 @@
+import { Metadata } from "next";
 import DashboardView from "./DashboardView";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Dashboard Workspace",
   description: "Monitor your booked clinical appointments, modify upcoming patient visits, and track your healthcare history updates live.",
   openGraph: {
